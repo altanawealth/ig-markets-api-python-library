@@ -7,7 +7,7 @@ http://labs.ig.com/rest-trading-api-reference
 Original version by Lewis Barber - 2014 - http://uk.linkedin.com/in/lewisbarber/
 Modified by Femto Trader - 2014-2015 - https://github.com/femtotrader/
 """
-
+import time
 import json
 
 from requests import Session
@@ -348,6 +348,9 @@ class IGService:
 
     def fetch_deal_by_deal_reference(self, deal_reference, session=None):
         """Returns a deal confirmation for the given deal reference"""
+        # Add a sleep as this function is requested by deal origination functions too quickly
+        time.sleep(0.5)
+        
         params = {}
         url_params = {
             'deal_reference': deal_reference
@@ -435,17 +438,13 @@ class IGService:
             'stopLevel': stop_level
         }
 
-        print('lslsls')
-
         endpoint = '/positions/otc'
         action = 'create'
         response = self._req(action, endpoint, params, session)
 
-        print('ffffff')
         if response.status_code == 200:
-            print('We are here')
             deal_reference = json.loads(response.text)['dealReference']
-            print("mmmm", deal_reference)
+
             return self.fetch_deal_by_deal_reference(deal_reference)
         else:
             print('FAILLLLL', response.text)
@@ -741,6 +740,7 @@ class IGService:
 
         prices['volume'] = ts_lastTradedVolume
         return prices
+
 
     def format_prices(self, prices, flag_calc_spread=True):
         """Format prices data as a DataFrame with hierarchical columns"""
